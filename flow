@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet Rope Growth Engine v2.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Neutrals (Amber & Gray) -->
+    <!-- Application Structure Plan: The SPA is a "Growth Engine Dashboard" with a top nav for SPA-like section toggling (Overview, Phase A, B, C). This structure is chosen because the source report is a *strategic plan*, not a data report. A dashboard is the most effective way to make a *plan* or *system* interactive and explorable. Users can navigate the plan's phases, and key interactions (like the AI scoring model) are made dynamic. -->
+    <!-- Visualization & Content Choices: 1. Overview Funnel: (Report Goal) -> (Inform) -> Chart.js Horizontal Bar Chart -> (Static) -> Shows the plan's funnel math (plausible data to reach 500 goal). 2. Architecture Diagram: (Report Structure) -> (Organize) -> HTML/Tailwind Divs (Flexbox) -> (Static) -> Visualizes the [Hunter]->[Gatekeeper] flow (NO SVG). 3. Phase A Diagrams: (Report Process) -> (Organize) -> HTML/Tailwind Divs -> (Static) -> Visualizes the Waterfall and AI logic. 4. Phase B Scoring: (Report Logic) -> (Interact/Inform) -> Chart.js Doughnut Chart + Select Dropdown -> (Dynamic JS) -> Allows user to select a persona and see the AI Judge's 100-point score update dynamically. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcf9;
+            color: #1f2937;
+        }
+        .nav-link {
+            @apply px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-amber-100 hover:text-amber-800 transition-colors;
+        }
+        .nav-link.active {
+            @apply bg-amber-500 text-white hover:bg-amber-600 hover:text-white;
+        }
+        .content-section {
+            @apply hidden animate-fade-in;
+        }
+        .content-section.active {
+            @apply block;
+        }
+        .card {
+            @apply bg-white p-6 rounded-xl shadow-lg border border-gray-100;
+        }
+        .card-title {
+            @apply text-xl font-semibold text-gray-800 mb-3;
+        }
+        .card-subtitle {
+            @apply text-sm font-medium text-amber-600 mb-2;
+        }
+        .badge {
+            @apply inline-block bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-full;
+        }
+        .flow-arrow {
+            @apply text-3xl text-amber-400 mx-4 hidden md:block;
+        }
+        .flow-box {
+            @apply bg-white p-4 rounded-lg shadow-md text-center border-2 border-amber-200 flex-1 min-w-[150px];
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/90 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <span class="text-2xl font-bold text-amber-700">🚀</span>
+                    <span class="ml-3 text-lg font-bold text-gray-800">Velvet Rope Growth Engine v2.5</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4" id="nav-links">
+                        <a href="#overview" class="nav-link active" data-section="overview">Overview</a>
+                        <a href="#hunter" class="nav-link" data-section="hunter">Phase A: Hunter</a>
+                        <a href="#gatekeeper" class="nav-link" data-section="gatekeeper">Phase B: Gatekeeper</a>
+                        <a href="#steward" class="nav-link" data-section="steward">Phase C: Steward</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                        <option value="overview">Overview</option>
+                        <option value="hunter">Phase A: Hunter</option>
+                        <option value="gatekeeper">Phase B: Gatekeeper</option>
+                        <option value="steward">Phase C: Steward</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Added mt-20 to push content below the fixed header -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-20">
+
+        <section id="overview" class="content-section active">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">A Full-Cycle AI Growth Engine</h1>
+                <p class="mt-4 text-lg leading-8 text-gray-600">Automating how we source, qualify, and convert 500 elite attendees.</p>
+            </div>
+
+            <div class="card mb-12">
+                <h2 class="card-title">The Dual-Engine Pipeline</h2>
+                <p class="text-gray-600 mb-6">This system solves the entire funnel: data → personalized outreach → qualification → commitment → virality. It's built on three core engines that feed into each other.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-amber-50 p-6 rounded-lg border border-amber-200">
+                        <h3 class="text-lg font-semibold text-amber-900">1. The Hunter (Outbound)</h3>
+                        <p class="text-gray-700 mt-2">Finds & persuades hyper-qualified leads (Clinicians, Investors, Execs) using multi-source data and AI-driven personalization.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                        <h3 class="text-lg font-semibold text-blue-900">2. The Gatekeeper (Inbound)</h3>
+                        <p class="text-gray-700 mt-2">Acts as an AI admissions officer, scoring all signups on a 100-point scale to admit only the right people and protect event quality.</p>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-200">
+                        <h3 class="text-lg font-semibold text-green-900">3. The Steward (Conversion)</h3>
+                        <p class="text-gray-700 mt-2">Converts signups into attendees by anchoring commitment (calendar invites) and triggers growth loops for referral-based acquisition.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-12">
+                <h2 class="card-title text-center">System Architecture</h2>
+                <p class="text-gray-600 mb-8 text-center">This isn't a linear workflow; it's a feedback-driven intelligence system that compounds the attendee pool.</p>
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0">
+                    <div class="flow-box border-amber-300">
+                        <span class="text-2xl">🎯</span>
+                        <h4 class="font-semibold">Hunter</h4>
+                        <p class="text-xs">Outbound Engine</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box border-blue-300">
+                        <span class="text-2xl">🛡️</span>
+                        <h4 class="font-semibold">Gatekeeper</h4>
+                        <p class="text-xs">Inbound AI Judge</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box border-green-300">
+                        <span class="text-2xl">🤝</span>
+                        <h4 class="font-semibold">Steward</h4>
+                        <p class="text-xs">Conversion & Loops</p>
+                    </div>
+                </div>
+                <div class="flex justify-center mt-4">
+                    <div class="text-3xl text-purple-400">↓</div>
+                </div>
+                <div class="flex justify-center mt-4">
+                    <div class="flow-box border-purple-300 max-w-xs">
+                        <span class="text-2xl">🔄</span>
+                        <h4 class="font-semibold">Referral Loop</h4>
+                        <p class="text-xs">Feeds back into Gatekeeper</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title text-center">Projected Attendee Funnel</h2>
+                <p class="text-gray-600 mb-6 text-center">This model projects how the engine achieves the 500-attendee goal by focusing on quality over quantity.</p>
+                <div class="chart-container">
+                    <canvas id="funnelChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="hunter" class="content-section">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Phase A: The Hunter</h1>
+                <p class="mt-4 text-lg leading-8 text-gray-600">"We don’t buy lists. We craft them."</p>
+            </div>
+
+            <div class="card mb-12">
+                <h2 class="card-title">1. Multi-Source Data Strategy</h2>
+                <p class="text-gray-600 mb-6">We use industry-rigorous filters to source leads from where they live, ensuring maximum relevance.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gray-50 p-6 rounded-lg border">
+                        <h3 class="text-lg font-semibold text-gray-800">Stream 1: Clinicians</h3>
+                        <p class="text-sm text-gray-600 mt-2">Highest value, lowest availability. Sourced from PubMed, ASCO profiles, and NIH RePORTER.</p>
+                        <span class="badge mt-3 bg-red-100 text-red-800">Oncology, CAR-T, Radiology</span>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg border">
+                        <h3 class="text-lg font-semibold text-gray-800">Stream 2: Investors</h3>
+                        <p class="text-sm text-gray-600 mt-2">High leverage. Sourced from Crunchbase Pro, Pitchbook, and VC memos.</p>
+                        <span class="badge mt-3 bg-green-100 text-green-800">AI + Healthcare, Seed Stage</span>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg border">
+                        <h3 class="text-lg font-semibold text-gray-800">Stream 3: Executives</h3>
+                        <p class="text-sm text-gray-600 mt-2">Volume + Relevance. Sourced from Apollo.io and Definitive Healthcare.</p>
+                        <span class="badge mt-3 bg-blue-100 text-blue-800">Payer Strategy, Clinical Ops</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-12">
+                <h2 class="card-title">2. Clay Waterfall 2.0 (Email Enrichment)</h2>
+                <p class="text-gray-600 mb-6">A cost-efficient stack to maximize email match rates, finding corporate execs and clinicians alike.</p>
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flow-box bg-white border-gray-300">Import Leads</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box bg-white border-gray-300">Apollo.io</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box bg-white border-gray-300">Dropcontact</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box bg-white border-gray-300">Debounce</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box bg-green-100 border-green-300">Validated Email</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">3. The "Chameleon AI" Agent</h2>
+                <p class="text-gray-600 mb-6">First, the AI segments leads into personas. Then, it writes attribute-aware personalized hooks to move reply rates from 5% to 30%+.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">A. AI Segmentation</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><span class="font-semibold text-red-700">CLINICAL</span> (Oncologists, MDs)</li>
+                            <li><span class="font-semibold text-green-700">INVESTOR</span> (VCs, Partners)</li>
+                            <li><span class="font-semibold text-blue-700">CORPORATE</span> (Health System Execs)</li>
+                            <li><span class="font-semibold text-purple-700">PHARMA / BIOTECH</span></li>
+                            <li><span class="font-semibold text-yellow-700">PAYER</span> (Insurance Execs)</li>
+                            <li><span class="font-semibold text-gray-500">RESEARCH</span></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">B. Persona Hook Examples</h3>
+                        <div class="space-y-3">
+                            <p class="text-gray-700 p-3 bg-gray-50 rounded-md border">"<span class="font-medium text-red-700">[CLINICAL]</span> ...your published paper on CAR-T cell therapy is why I'm reaching out..."</p>
+                            <p class="text-gray-700 p-3 bg-gray-50 rounded-md border">"<span class="font-medium text-green-700">[INVESTOR]</span> ...given your fund's recent investment in AI-driven diagnostics..."</p>
+                            <p class="text-gray-700 p-3 bg-gray-50 rounded-md border">"<span class="font-medium text-blue-700">[CORPORATE]</span> ...as you lead clinical operations at Optum, this discussion on payer reform..."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gatekeeper" class="content-section">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Phase B: The Gatekeeper</h1>
+                <p class="mt-4 text-lg leading-8 text-gray-600">"The UX is a filter. We position it as an application, not a free ticket."</p>
+            </div>
+
+            <div class="card mb-12">
+                <h2 class="card-title text-center">Interactive AI Scoring Model (100-Point Scale)</h2>
+                <p class="text-gray-600 mb-6 text-center">Select a sample persona to see how the AI Judge would score them in real-time. This model is how we defend the quality of the 500 attendees.</p>
+                
+                <div class="max-w-md mx-auto mb-6">
+                    <label for="persona-select" class="block text-sm font-medium text-gray-700 mb-2">Select Persona:</label>
+                    <select id="persona-select" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                        <option value="oncologist">Chief of Oncology @ Mayo Clinic</option>
+                        <option value="investor">Partner @ a16z Bio</option>
+                        <option value="exec">VP Clinical Ops @ Optum</option>
+                        <option value="founder">HealthTech Founder (Seed)</option>
+                        <option value="student">Student / Intern</option>
+                        <option value="sdr">Sales Rep (SDR)</option>
+                    </select>
+                </div>
+
+                <!-- Updated Chart Container with centered text -->
+                <div class="chart-container relative" style="height: 300px; max-height: 300px;">
+                    <canvas id="scoringChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <div id="score-text" class="text-5xl font-bold text-gray-800"></div>
+                        <div id="score-label" class="text-lg font-medium text-gray-500 mt-1">Total Score</div>
+                    </div>
+                </div>
+                
+                <div id="score-breakdown" class="max-w-lg mx-auto mt-6 text-sm text-gray-600 space-y-2 text-center"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">Routing Logic</h2>
+                <p class="text-gray-600 mb-6">Based on the score, the system automatically routes leads into four distinct, scalable segments.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-300">
+                        <h3 class="font-semibold text-green-800">Segment 1: VIP (≥ 80)</h3>
+                        <ul class="list-disc list-inside text-sm text-gray-700 mt-2">
+                            <li>Auto-confirm</li>
+                            <li>Send Calendar Invite</li>
+                            <li>Post Slack Alert</li>
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-300">
+                        <h3 class="font-semibold text-blue-800">Segment 2: General (60-79)</h3>
+                        <ul class="list-disc list-inside text-sm text-gray-700 mt-2">
+                            <li>Soft confirmation</li>
+                            <li>Lower-priority comms</li>
+                        </ul>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
+                        <h3 class="font-semibold text-yellow-800">Segment 3: Waitlist (30-59)</h3>
+                        <ul class="list-disc list-inside text-sm text-gray-700 mt-2">
+                            <li>No calendar invite</li>
+                            <li>Internal review only</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-300">
+                        <h3 class="font-semibold text-red-800">Segment 4: Reject (< 30)</h3>
+                        <ul class="list-disc list-inside text-sm text-gray-700 mt-2">
+                            <li>Send polite rejection</li>
+                            <li>Auto-tag in CRM</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="steward" class="content-section">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Phase C: The Steward</h1>
+                <p class="mt-4 text-lg leading-8 text-gray-600">Automating conversion, commitment, and compounding growth loops.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card">
+                    <span class="text-3xl">🗓️</span>
+                    <h2 class="card-title mt-2">Loop 1: The Calendar Anchor</h2>
+                    <p class="text-gray-600">A calendar invite is the highest form of commitment. This is triggered automatically for all VIPs (Score ≥ 80) to dramatically increase show-up rates.</p>
+                </div>
+                <div class="card">
+                    <span class="text-3xl">🤝</span>
+                    <h2 class="card-title mt-2">Loop 2: The Plus-One Loop</h2>
+                    <p class="text-gray-600">Triggers 2 hours after VIP confirmation. "We can fast-track one colleague from your team." This can produce 30-120 extra high-caliber attendees for $0 CAC.</p>
+                </div>
+                <div class="card">
+                    <span class="text-3xl">👨‍👩‍👧‍👦</span>
+                    <h2 class="card-title mt-2">Loop 3: Emergent Behavior Loop</h2>
+                    <p class="text-gray-600">AI finds VIPs who are Directors or VPs and automatically offers to "arrange grouped seating" for their extended team, turning one lead into a 10-person cluster.</p>
+                </div>
+                <div class="card">
+                    <span class="text-3xl">🧠</span>
+                    <h2 class="card-title mt-2">Loop 4: Lead Intelligence Loop</h2>
+                    <p class="text-gray-600">When a VIP responds, AI scrapes their org for relevant initiatives, AI transformation work, and oncology footprint. This enriches all future comms and guarantees retention.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-gray-200">
+        <p class="text-sm text-gray-500">A visualization of the "Velvet Rope Growth Engine v2.5" Plan.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('#nav-links .nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+
+            const appState = {
+                activeSection: 'overview',
+            };
+
+            const scoringData = {
+                oncologist: {
+                    score: 92,
+                    data: [40, 20, 20, 10],
+                    labels: ['Title Seniority (40)', 'Company Tier (20)', 'Relevance (20)', 'Persona Fit (10)'],
+                    breakdown: 'Score breakdown: 40 (Chief) + 20 (Mayo) + 20 (Oncology) + 10 (Clinical) = 92.'
+                },
+                investor: {
+                    score: 88,
+                    data: [35, 18, 20, 15],
+                    labels: ['Title Seniority (35)', 'Company Tier (18)', 'Relevance (20)', 'Persona Fit (15)'],
+                    breakdown: 'Score breakdown: 35 (Partner) + 18 (a16z) + 20 (Bio) + 15 (Investor) = 88.'
+                },
+                exec: {
+                    score: 80,
+                    data: [30, 20, 20, 10],
+                    labels: ['Title Seniority (30)', 'Company Tier (20)', 'Relevance (20)', 'Persona Fit (10)'],
+                    breakdown: 'Score breakdown: 30 (VP) + 20 (Optum) + 20 (Clinical Ops) + 10 (Corporate) = 80.'
+                },
+                founder: {
+                    score: 75,
+                    data: [25, 15, 20, 15],
+                    labels: ['Title Seniority (25)', 'Company Tier (15)', 'Relevance (20)', 'Persona Fit (15)'],
+                    breakdown: 'Score breakdown: 25 (Founder) + 15 (Seed) + 20 (HealthTech) + 15 (Corporate) = 75.'
+                },
+                student: {
+                    score: 0,
+                    data: [0, 0, 0, 0],
+                    labels: ['Title Seniority (0)', 'Company Tier (0)', 'Relevance (0)', 'Persona Fit (0)'],
+                    breakdown: 'Score breakdown: 0 (Student) - 20 (Unqualified) = 0. Auto-Reject.'
+                },
+                sdr: {
+                    score: 0,
+                    data: [0, 0, 0, 0],
+                    labels: ['Title Seniority (0)', 'Company Tier (0)', 'Relevance (0)', 'Persona Fit (0)'],
+                    breakdown: 'Score breakdown: 0 (SDR) - 20 (Unqualified) = 0. Auto-Reject.'
+                }
+            };
+
+            let funnelChart, scoringChart;
+
+            function setActiveSection(sectionId) {
+                appState.activeSection = sectionId;
+
+                sections.forEach(section => {
+                    section.classList.toggle('active', section.id === appState.activeSection);
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.section === appState.activeSection);
+                });
+
+                if (mobileNav.value !== appState.activeSection) {
+                    mobileNav.value = appState.activeSection;
+                }
+
+                window.scrollTo(0, 0);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setActiveSection(e.target.dataset.section);
+                    window.location.hash = e.target.dataset.section;
+                });
+            });
+
+            mobileNav.addEventListener('change', (e) => {
+                setActiveSection(e.target.value);
+                window.location.hash = e.target.value;
+            });
+            
+            function initOverviewChart() {
+                const ctx = document.getElementById('funnelChart').getContext('2d');
+                funnelChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Leads Hunted (A)', 'Signups (B)', 'VIPs Confirmed (C)', 'Goal'],
+                        datasets: [{
+                            label: 'Projected Attendees',
+                            data: [10000, 1200, 520, 500],
+                            backgroundColor: [
+                                'rgba(251, 191, 36, 0.6)',
+                                'rgba(59, 130, 246, 0.6)',
+                                'rgba(16, 185, 129, 0.6)',
+                                'rgba(239, 68, 68, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(251, 191, 36, 1)',
+                                'rgba(59, 130, 246, 1)',
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(239, 68, 68, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Path to 500 Qualified Attendees'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { display: false }
+                            },
+                            y: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function initGatekeeperChart() {
+                const ctx = document.getElementById('scoringChart').getContext('2d');
+                const personaSelect = document.getElementById('persona-select');
+                const scoreText = document.getElementById('score-text');
+                const scoreBreakdown = document.getElementById('score-breakdown');
+
+                scoringChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [
+                                'rgba(239, 68, 68, 0.8)',
+                                'rgba(251, 191, 36, 0.8)',
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(16, 185, 129, 0.8)'
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: { 
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    boxWidth: 12
+                                }
+                            },
+                            tooltip: {
+                                enabled: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                function updateChart(persona) {
+                    const data = scoringData[persona];
+                    scoringChart.data.labels = data.labels;
+                    scoringChart.data.datasets[0].data = data.data;
+                    scoringChart.update();
+                    
+                    scoreText.textContent = data.score;
+                    scoreBreakdown.textContent = data.breakdown;
+
+                    // Updated class assignment to remove negative margins
+                    let colorClass = 'text-red-600';
+                    if (data.score >= 80) colorClass = 'text-green-600';
+                    else if (data.score >= 60) colorClass = 'text-blue-600';
+                    else if (data.score > 0) colorClass = 'text-yellow-600';
+                    
+                    scoreText.className = `text-5xl font-bold ${colorClass}`;
+                }
+
+                personaSelect.addEventListener('change', (e) => {
+                    updateChart(e.target.value);
+                });
+
+                updateChart('oncologist');
+            }
+            
+            if (window.location.hash) {
+                const sectionId = window.location.hash.substring(1);
+                if (document.getElementById(sectionId)) {
+                    setActiveSection(sectionId);
+                }
+            }
+
+            initOverviewChart();
+            initGatekeeperChart();
+        });
+    </script>
+</body>
+</html>
